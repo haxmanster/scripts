@@ -1,0 +1,127 @@
+#!/bin/bash
+#chek interface.....
+
+sudo ip link
+sudo ip a
+
+echo " "
+echo "================================================================================"
+echo "DODAJE NAME SPACE"
+echo "================================================================================"
+echo " "
+
+sudo ip netns add Ns1
+sudo ip netns add Ns2
+sudo ip netns add Ns3
+sudo ip netns add Ns4
+
+echo " "
+echo "================================================================================"
+echo "Wyswietla Namespace:"
+echo "================================================================================"
+echo " "
+
+sudo ip netns
+
+echo " "
+echo"================================================================================="
+echo" Polaczenia interfejsow:"
+echo"================================================================================="
+echo" "
+
+sudo ip nets exec Ns1 ip link
+sudo ip nets exec Ns2 ip link
+sudo ip nets exec Ns3 ip link
+sudo ip nets exec Ns4 ip link
+
+echo" "
+echo"================================================================================="
+echo" Tworzymy bridga  i sprawdzamy czy sie utworzyl:"
+echo"================================================================================="
+echo" "
+
+sudo ovs-vsctl add-br OVS1
+sudo ovs-vsctl show
+
+echo" "
+echo"================================================================================="
+echo" Tworzymy wirtualne interfejsy:"
+echo"================================================================================="
+echo" "
+
+sudo ip link add ens3-ns1 type veth peer name veth-ns1
+sudo ip link add ens3-ns2 type veth peer name veth-ns2
+sudo ip link add ens3-ns3 type veth peer name veth-ns3
+sudo ip link add ens3-ns4 type veth peer name veth-ns4
+
+echo" "
+echo"================================================================================="
+echo"Przypisujemy sobie interfejsy "
+echo"================================================================================="
+echo" "
+sudo ip link set ens3-ns1 netns Ns1
+sudo ip link set ens3-ns2 netns Ns2
+sudo ip link set ens3-ns3 netns Ns3
+sudo ip link set ens3-ns4 netns Ns4
+echo " "
+echo "================================================================================="
+echo "Bridgujemy i sprawdzamy :D"
+echo "================================================================================="
+echo " "
+
+sudo ovs-vsctl add-port OVS1 veth-ns1
+sudo ovs-vsctl add-port OVS1 veth-ns2
+sudo ovs-vsctl add-port OVS1 veth-ns3
+sudo ovs-vsctl add-port OVS1 veth-ns4
+sudo ovs-vsctl show
+
+echo " "
+echo "================================================================================="
+echo "Odpalamy "
+echo "================================================================================="
+echo " "
+
+sudo ip link set veth-ns1 up
+sudo ip link set veth-ns2 up
+sudo ip link set veth-ns3 up
+sudo ip link set veth-ns4 up
+
+sudo ip netns exec Ns1 ip link set dev lo up
+sudo ip netns exec Ns1 ip link set dev ens3-ns1 up
+
+sudo ip netns exec Ns2 ip link set dev lo up
+sudo ip netns exec Ns2 ip link set dev ens3-ns2 up
+
+sudo ip netns exec Ns3 ip link set dev lo up
+sudo ip netns exec Ns3 ip link set dev ens3-ns3 up
+
+sudo ip netns exec Ns4 ip link set dev lo up
+sudo ip netns exec Ns4 ip link set dev ens3-ns4 up
+
+echo " "
+echo "================================================================================="
+echo "Nadajemy adresy sieciowe:"
+echo "================================================================================="
+echo " "
+
+sudo ip netns exec Ns1 ip address add 10.10.10.1/24 dev ens3-ns1
+sudo ip netns exec Ns2 ip address add 10.10.10.2/24 dev ens3-ns2
+sudo ip netns exec Ns3 ip address add 10.10.10.3/24 dev ens3-ns3
+sudo ip netns exec Ns4 ip address add 10.10.10.4/24 dev ens3-ns4
+
+echo " "
+echo "================================================================================="
+echo "Nadajemy Tagi virtualkom:"
+echo "================================================================================="
+echo " "
+
+sudo ovs-vsctl set port veth-ns1 tag=100
+sudo ovs-vsctl set port veth-ns2 tag=100
+sudo ovs-vsctl set port veth-ns3 tag=200
+sudo ovs-vsctl set port veth-ns4 tag=200
+
+echo " "
+echo "================================================================================="
+echo "K  O  N  I  E  C"
+echo "================================================================================="
+echo " "
