@@ -1,0 +1,137 @@
+## Useful links
+- https://lukaszwrobel.pl/blog/tmux-tutorial-split-terminal-windows-easily/
+- https://blog.scottlowe.org/2014/03/21/a-follow-up-on-linux-network-namespaces/
+- https://blogs.igalia.com/dpino/2016/04/10/network-namespaces/
+- http://docs.openvswitch.org/en/latest/howto/vlan/
+- http://plasmixs.github.io/network-namespaces-ovs.html
+- https://www.youtube.com/watch?v=_WgUwUf1d34
+- http://docs.openvswitch.org/en/latest/faq/openflow/
+
+## Script for Ubuntu 16.04 LTS 64bit
+
+```bash
+# install dependencies and enable essential network stuff iperf
+apt-get update
+apt-get install -y bridge-utils openvswitch-switch
+modprobe 8021q
+echo 1 > /proc/sys/net/ipv4/ip_forward
+
+# openvswitch bridge create and info
+ovs-vsctl add-br br0
+ovs-vsctl show
+
+# ns1
+# add namespace
+ip netns add namespace1
+# add virtual ethernet "cable" with two ends
+ip link add vns1 type veth peer name vpeerns1
+# set virutal ethernet on to belong in namespace1
+ip link set vpeerns1 netns namespace1
+# show link info from the namespace
+ip netns exec namespace1 ip link
+# start veth port
+ip link set vns1 up
+# add network config to veth in namespace end
+ip netns exec namespace1 ip addr add 10.10.10.10/24 dev vpeerns1
+ip netns exec namespace1 ip link set vpeerns1 up
+# add loopback just in case
+ip netns exec namespace1 ip link set dev lo up
+# connect second end of veth to switch
+ovs-vsctl add-port br0 vns1
+# tag this veth cable to use only vlan100
+ovs-vsctl set port vns1 tag=100
+
+# ns2
+ip netns add namespace2
+ip link add vns2 type veth peer name vpeerns2
+ip link set vpeerns2 netns namespace2
+ip netns exec namespace2 ip link
+ip link set vns2 up
+ip netns exec namespace2 ip addr add 10.10.10.20/24 dev vpeerns2
+ip netns exec namespace2 ip link set vpeerns2 up
+ip netns exec namespace2 ip link set dev lo up
+ovs-vsctl add-port br0 vns2
+ovs-vsctl set port vns2 tag=100
+
+# ns3
+ip netns add namespace3
+ip link add vns3 type veth peer name vpeerns3
+ip link set vpeerns3 netns namespace3
+ip netns exec namespace3 ip link
+ip link set vns3 up
+ip netns exec namespace3 ip addr add 10.10.10.10/24 dev vpeerns3
+ip netns exec namespace3 ip link set vpeerns3 up
+ip netns exec namespace3 ip link set dev lo up
+ovs-vsctl add-port br0 vns3
+ovs-vsctl set port vns3 tag=200
+
+# ns4
+ip netns add namespace4
+ip link add vns4 type veth peer name vpeerns4
+ip link set vpeerns4 netns namespace4
+ip netns exec namespace4 ip link
+ip link set vns4 up
+ip netns exec namespace4 ip addr add 10.10.10.20/24 dev vpeerns4
+ip netns exec namespace4 ip link set vpeerns4 up
+ip netns exec namespace4 ip link set dev lo up
+ovs-vsctl add-port br0 vns4
+ovs-vsctl set port vns4 tag=200
+
+# check traffic
+
+#tcpdump -nni vns3 icmp
+#ip netns exec namespace3 ping 10.10.10.20
+
+#ip netns exec namespace1 iperf -s
+#ip netns exec namespace2 iperf -c 10.10.10.10
+
+#ip netns exec namespace3 iperf -s
+#ip netns exec namespace4 iperf -c 10.10.10.10
+
+# docker
+apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+apt-get update
+apt-get install -y docker-ce
+
+# floodlight
+# https://hub.docker.com/r/glefevre/floodlight/
+docker run -d -p 6653:6653 -p 8080:8080 --name=floodlight --restart always glefevre/floodlight 
+
+# enable openflow on switch
+ovs-vsctl set bridge br0 protocols=OpenFlow13
+# show openflow info
+ovs-appctl bridge/dump-flows br0
+# connect switch to the floodlight controller, CHANGE IP!
+ovs-vsctl set-controller br0 tcp:10.28.6.11:6653
+# show openflow info
+ovs-appctl bridge/dump-flows br0
+
+# VXLAN tunnel to other VM, remember to CHANGE IP!
+ovs-vsctl add-port br0 vxlan1 -- set interface vxlan1 type=vxlan options:remote_ip=192.168.1.2 options:key=flow options:dst_port=8472
+
+# ns5
+ip netns add namespace5
+ip link add vns5 type veth peer name vpeerns5
+ip link set vpeerns5 netns namespace5
+ip netns exec namespace5 ip link
+ip link set vns5 up
+ip netns exec namespace5 ip addr add 10.10.10.10/24 dev vpeerns5
+ip netns exec namespace5 ip link set vpeerns5 up
+ip netns exec namespace5 ip link set dev lo up
+ovs-vsctl add-port br0 vns5
+ovs-vsctl set port vns5 tag=300
+
+# change bridge MAC to match ens3 interface, CHANGE MAC!
+ovs-vsctl set interface br0 mac=\"fa:16:3e:ac:b8:43\"
+# connect switch to main port, RISKY!
+ovs-vsctl add-port br0 ens3
+
+# network without namespace
+ip link add vns0 type veth peer name vpeerns0
+ip link set vns0 up
+ip addr add 192.168.0.1/24 dev vpeerns0
+ip link set vpeerns0 up
+ovs-vsctl add-port br0 vns0
+```
