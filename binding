@@ -1,0 +1,26 @@
+#!/bin/bash
+#ifconfig enp0s9 down
+#ifconfig enp0s9 192.168.1.1
+#ifconfig enp0s9 up
+
+modprobe igb_uio
+dpdk-devbind -u 00:08.0
+dpdk-devbind -u 00:09.0
+dpdk-devbind --bind=igb_uio 00:08.0
+dpdk-devbind --bind=igb_uio 00:09.0
+dpdk-devbind --status
+
+ovs-vsctl set Open_vSwitch . other_config:dpdk-init=true other_config:dpdk-socket-mem=128
+#Delete Bridge 0  before create new bridge
+ovs-vsctl del-br br0
+ovs-vsctl add-br br0 -- set bridge br0 datapath_type=netdev
+#Delete Bridge 1  before create new bridge
+ovs-vsctl del-br br1
+ovs-vsctl add-br br1 -- set bridge br1 datapath_type=netdev
+
+ovs-vsctl add-port br0 dpdk-p0 -- set Interface dpdk-p0 type=dpdk options:dpdk-devargs=0000:00:08.0
+ovs-vsctl add-port br1 dpdk-p1 -- set Interface dpdk-p1 type=dpdk options:dpdk-devargs=0000:00:09.0
+
+ovs-vsctl set-controller br0 tcp:10.28.6.24:6653
+ovs-vsctl set-controller br1 tcp:10.28.6.24:6653
+
