@@ -1,0 +1,23 @@
+ip netns add namespace4
+ip link add vns4-br0 type veth peer name vpeerns4
+ip link set vpeerns4 netns namespace4
+ip netns exec namespace4 ip link
+ip link set vns4-br0 up
+ip netns exec namespace4 ip addr add 10.10.10.50/24 dev vpeerns4
+ip netns exec namespace4 ip link set mtu 1450 dev vpeerns4
+ip netns exec namespace4 ip link set vpeerns4 up
+ip netns exec namespace4 ip link set dev lo up
+ovs-vsctl add-port br0 vns4-br0
+ovs-vsctl set port vns4-br0 tag=200
+
+ip netns add namespace3
+ip link add vns3 type veth peer name vpeerns3
+ip link set vpeerns3 netns namespace3
+ip netns exec namespace3 ip link
+ip link set vns3 up
+ip netns exec namespace3 ip addr add 10.10.10.60/24 dev vpeerns3
+ip netns exec namespace3 ip link set mtu 1450 dev vpeerns3
+ip netns exec namespace3 ip link set vpeerns3 up
+ip netns exec namespace3 ip link set dev lo up
+ovs-vsctl add-port br0 vns3
+ovs-vsctl set port vns3 tag=200
