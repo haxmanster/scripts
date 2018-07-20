@@ -3,7 +3,9 @@
 import os
 import sys
 
-def menu():
+
+
+def console():
 
     if len(sys.argv) == 2 and sys.argv[1] == "-install":
         os.system("apt-get update")
@@ -54,6 +56,10 @@ def menu():
         os.system("rm -rf buildroot")
         return
 
+    if len(sys.argv) == 2 and sys.argv[1] == "menu":
+        menu()
+        return
+
     if len(sys.argv) == 2 and sys.argv[1] == "-help":
         os.system("clear")
         print ('''
@@ -86,4 +92,42 @@ def menu():
          print('Use command ./u-boot -help')
     return
 
-menu()
+
+def menu():
+    print(" Welcome in initiation script ")
+
+    print("""
+**************************************************************
+*============================================================*
+*|               Master control unit xD                     |*
+*============================================================*
+**************************************************************
+* [1] Install python modules (flask,pip,etc)                 *
+* [2] Install gitlab-ce                                      *
+* [3] Install gcc modules                                    *
+* [4] Install gcc modules                                    *
+* [5] Install gcc modules                                    *
+* [6] Install gcc modules                                    *
+* [7] Install gcc modules                                    *
+* [8] Install gcc modules                                    *
+* [9] Install gcc modules                                    *
+* [10] Install gcc modules                                   *
+* [11] Exit this menu                                        *
+**************************************************************
+          """)
+    choice = input("choose an option ")
+
+    if choice == "1":
+        os.system("apt install gcc-8")
+
+    elif choice == "2":
+        os.system("apt install mc")
+
+    elif choice == "11":
+        print("bye")
+
+    else:
+        os.system("clear")
+        menu()
+
+console()
