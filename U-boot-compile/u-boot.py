@@ -3,17 +3,21 @@
 import os
 import sys
 
+
 def menu():
 
     if len(sys.argv) == 2 and sys.argv[1] == "-install":
         os.system("apt-get update")
-        os.system("apt-get install -y make ncurses-dev gedit flex bc bison u-boot-tools gcc gcc-arm-linux-gnueabihf gcc-arm-linux-gnueabi g++-arm-linux-gnueabihf libc6-armel-cross libncurses5-dev git-core git-gui gitk device-tree-compiler gcc-aarch64-linux-gnu mtools")
-        os.system("apt-get install -y u-boot-tools autoconf texinfo g++ gettext build-essential crossbuild-essential-armhf gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu mtools parted libssl-dev")
+        os.system("apt-get install -y make ncurses-dev gedit flex bc bison u-boot-tools gcc gcc-arm-linux-gnueabihf "
+                  "gcc-arm-linux-gnueabi g++-arm-linux-gnueabihf libc6-armel-cross libncurses5-dev git-core git-gui "
+                  "gitk device-tree-compiler gcc-aarch64-linux-gnu mtools")
+        os.system("apt-get install -y u-boot-tools autoconf texinfo g++ gettext build-essential "
+                  "crossbuild-essential-armhf gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu mtools parted libssl-dev")
         return
 
     if len(sys.argv) == 2 and sys.argv[1] == "-install-rpi":
         os.system("apt-get update")
-        os.system("apt-get install -y gcc-arch64-linux-gnu")
+        os.system("apt-get install -y gcc-aarch64-linux-gnu")
         return
 
     if len(sys.argv) == 2 and sys.argv[1] == "-install-gcc":
@@ -59,38 +63,47 @@ def menu():
         os.system("git clone git://github.com/raspberrypi/tools rpi-tools")
         return
 
+    if len(sys.argv) == 2 and sys.argv[1] == "-make-rpi":
+        os.system("PATH=~/rpi/u_boot/:$PATH")
+        os.system("make -C ~/rpi/u_boot ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- O=ajaj rpi_2_defconfig all -j4")
+        return
+
     if len(sys.argv) == 2 and sys.argv[1] == "-help":
         os.system("clear")
-        print ('''
+        print('''
 
-   +==============================================================================+
-   |                            Use with switches:                                |
-   +==============================================================================+
-   |                                                                              |
-   | -install: Install all package to cross compiler                              |
-   |                                                                              |
-   | -install-gcc: install gcc package                                            |
-   |                                                                              |
-   | -install-rpi: install cross compiler for Raspberry pi (ARCH=64bit)           |
-   |                                                                              |
-   | -clone-asus: Make directory asus and clone kernel and u boot for asus        |
-   |                                                                              |
-   | -clone-rpi: Make directory asus and clone kernel and u boot for rpi          |
-   |                                                                              |
-   | -clone-buildroot: Cloning builroot repo from github                          |
-   |                                                                              |
-   | -delete-asus: Delete directory asus                                          |
-   |                                                                              |
-   | -delete-rpi: Delete directory rpi                                            |
-   |                                                                              |
-   | -rpi-tool  Clone rpi cross-compile tool from repo                            |
-   |                                                                              |
-   |                                                                              |
-   +------------------------------------------------------------------------------+
+   ++==============================================================================++
+   ||                            Use with switches:                                ||
+   ++==============================================================================++
+   ||                                                                              ||
+   || -install: Install all package to cross compiler                              ||
+   ||                                                                              ||
+   ||                                                                              ||
+   || -install-rpi: install cross compiler for Raspberry pi (ARCH=64bit)           ||
+   ||                                                                              ||
+   || -clone-asus: Make directory asus and clone kernel and u boot for asus        ||
+   ||                                                                              ||
+   || -clone-rpi: Make directory asus and clone kernel and u boot for rpi          ||
+   ||                                                                              ||
+   || -clone-buildroot: Cloning builroot repo from github                          ||
+   ||                                                                              ||
+   || -delete-asus: Delete directory asus                                          ||
+   ||                                                                              ||
+   || -delete-rpi: Delete directory rpi                                            ||
+   ||                                                                              ||
+   || -rpi-tool  Clone rpi cross-compile tool from repo                            ||
+   ||                                                                              ||
+   || -make-rpi make and compile u-boot for RPI                                    ||
+   ||                                                                              ||
+   ||                                                                              ||
+   ||                                                                              ||
+   ||                                                                              ||
+   ++------------------------------------------------------------------------------++
       ''')
         return
     else:
-         print('Use command ./u-boot -help')
+        print('Use command ./u-boot -help')
     return
+
 
 menu()
