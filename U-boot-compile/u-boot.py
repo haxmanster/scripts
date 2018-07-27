@@ -63,13 +63,30 @@ def menu():
         os.system("git clone git://github.com/raspberrypi/tools rpi-tools")
         return
 
+    if len(sys.argv) == 2 and sys.argv[1] == "-make-asus":
+        os.system("PATH=~/asus/u_boot/:$PATH")
+        os.system("make -C ~/asus/u_boot CROSS_COMPILE=arm-linux-gnueabi- O=miniarm-rk3288 tinker-rk3288_defconfig all -j4 -s ")
+        print("""
+        \n
+        Compilation done Output folder ~/asus/u_boot/miniarm-rk3288
+        """)
+        print("Creating image boot.img")
+        os.system("mkdir ~/uboot-out")
+        os.system("mkimage -n rk3288 -T rksd -d ~/asus/u_boot/miniarm-rk3288/spl/u-boot-spl-dtb.bin u-boot.img")
+        os.system("cat ~/asus/u_boot/miniarm-rk3288/u-boot.bin >> ~/uboot-out/u-boot.img")
+        print("""
+        \n
+        Creating image done. Output directory $home/uboot-out"
+        """)
+        return
+
+
     if len(sys.argv) == 2 and sys.argv[1] == "-make-rpi":
         os.system("PATH=~/rpi/u_boot/:$PATH")
         os.system("make -C ~/rpi/u_boot ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- O=Rpi rpi_2_defconfig all -j4")
         print("""
         \n
-        Compilation done Output folder is rpi/u_boot/RPI   
-        
+        Compilation done Output folder is rpi/u_boot/RPI
         """)
         return
 
@@ -77,33 +94,33 @@ def menu():
         os.system("clear")
         print('''
 
-   ++==============================================================================++
-   ||                            Use with switches:                                ||
-   ++==============================================================================++
-   ||                                                                              ||
-   || -install: Install all package to cross compiler                              ||
-   ||                                                                              ||
-   ||                                                                              ||
-   || -install-rpi: install cross compiler for Raspberry pi (ARCH=64bit)           ||
-   ||                                                                              ||
-   || -clone-asus: Make directory asus and clone kernel and u boot for asus        ||
-   ||                                                                              ||
-   || -clone-rpi: Make directory asus and clone kernel and u boot for rpi          ||
-   ||                                                                              ||
-   || -clone-buildroot: Cloning builroot repo from github                          ||
-   ||                                                                              ||
-   || -delete-asus: Delete directory asus                                          ||
-   ||                                                                              ||
-   || -delete-rpi: Delete directory rpi                                            ||
-   ||                                                                              ||
-   || -rpi-tool  Clone rpi cross-compile tool from repo                            ||
-   ||                                                                              ||
-   || -make-rpi make and compile u-boot for RPI                                    ||
-   ||                                                                              ||
-   ||                                                                              ||
-   ||                                                                              ||
-   ||                                                                              ||
-   ++------------------------------------------------------------------------------++
+   ++=================================================================================================================================================================++
+   ||                                                                  Use command ./u-boot.py - <switch>                                                             ||
+   ++=================================================================================================================================================================++
+   ||                                                                              ||                                                                                 ||
+   || -install: Install all package to cross compiler                              ||                                                                                 ||
+   ||                                                                              ||                                                                                 ||
+   || -install-rpi: install cross compiler for Raspberry pi (ARCH=64bit)           ||                                                                                 ||
+   ||                                                                              ||                                                                                 ||
+   || -clone-asus: Make directory asus and clone kernel and u boot for asus        ||                                                                                 ||
+   ||                                                                              ||                                                                                 ||
+   || -clone-rpi: Make directory asus and clone kernel and u boot for rpi          ||                                                                                 ||
+   ||                                                                              ||                                                                                 ||
+   || -clone-buildroot: Cloning builroot repo from github                          ||                                                                                 ||
+   ||                                                                              ||                                                                                 ||
+   || -delete-asus: Delete directory asus                                          ||                                                                                 ||
+   ||                                                                              ||                                                                                 ||
+   || -delete-rpi: Delete directory rpi                                            ||                                                                                 ||
+   ||                                                                              ||                                                                                 ||
+   || -rpi-tool  Clone rpi cross-compile tool from repo                            ||                                                                                 ||
+   ||                                                                              ||                                                                                 ||
+   || -make-rpi make and compile u-boot for RPI                                    ||                                                                                 ||
+   ||                                                                              ||                                                                                 ||
+   || -make-asus make and compile u-boot for tinkerboard                           ||                                                                                 ||
+   ||                                                                              ||                                                                                 ||
+   ||                                                                              ||                                                                                 ||
+   ++------------------------------------------------------------------------------++---------------------------------------------------------------------------------++
+   ++------------------------------------------------------------------------------++---------------------------------------------------------------------------------++
       ''')
         return
     else:
