@@ -46,7 +46,7 @@ def menu():
         return
 
     if len(sys.argv) == 2 and sys.argv[1] == "-delete-rpi":
-        os.system("rm -rf ~/rpi")
+        os.system("rm -rf ~/rpi/")
         return
 
     if len(sys.argv) == 2 and sys.argv[1] == "-clone-buildroot":
@@ -59,13 +59,18 @@ def menu():
         return
 
     if len(sys.argv) == 2 and sys.argv[1] == "-rpi-tool":
-        os.system("mkdir ~rpi-tools")
+        os.system("mkdir ~/rpi-tools")
         os.system("git clone git://github.com/raspberrypi/tools rpi-tools")
         return
 
     if len(sys.argv) == 2 and sys.argv[1] == "-make-rpi":
         os.system("PATH=~/rpi/u_boot/:$PATH")
-        os.system("make -C ~/rpi/u_boot ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- O=ajaj rpi_2_defconfig all -j4")
+        os.system("make -C ~/rpi/u_boot ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- O=Rpi rpi_2_defconfig all -j4")
+        print("""
+        \n
+        Compilation done Output folder is rpi/u_boot/RPI   
+        
+        """)
         return
 
     if len(sys.argv) == 2 and sys.argv[1] == "-help":
