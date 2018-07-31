@@ -63,7 +63,7 @@ def menu():
         os.system("git clone git://github.com/raspberrypi/tools rpi-tools")
         return
 
-    if len(sys.argv) == 2 and sys.argv[1] == "-make-asus":
+    if len(sys.argv) == 2 and sys.argv[1] == "-make-asus-uboot":
         os.system("PATH=~/asus/u_boot/:$PATH")
         os.system("make -C ~/asus/u_boot CROSS_COMPILE=arm-linux-gnueabi- O=miniarm-rk3288 tinker-rk3288_defconfig all -j4 -s ")
         print("""
@@ -87,6 +87,18 @@ def menu():
         print("""
         \n
         Compilation done Output folder is rpi/u_boot/RPI
+        """)
+        return
+
+    if len(sys.argv) == 2 and sys.argv[1] == "-make-asus-kernel":
+        os.system("PATH=~/asus/kernel/:$PATH")
+        os.system("mkdir ~/tinkerboard-zImage/")
+        os.system("make -C ~/asus/kernel ARCH=arm O=miniarm-3288 miniarm-rk3288_defconfig -j4")
+        os.system("make -C ~/asus/kernel zImage ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- O=miniarm-3288 -j4")
+        os.system("cp ~/asus/kernel/miniarm-3288/arch/arm/boot/zImage ~/tinkerboard-zImage")
+        print("""
+        \n
+        Compilation done Output folder is ~/tinkerboard-zImage
         """)
         return
 
@@ -116,9 +128,9 @@ def menu():
    ||                                                                              ||                                                                                 ||
    || -make-rpi make and compile u-boot for RPI                                    ||                                                                                 ||
    ||                                                                              ||                                                                                 ||
-   || -make-asus make and compile u-boot for tinkerboard                           ||                                                                                 ||
+   || -make-asus-uboot make and compile u-boot for tinkerboard                     ||                                                                                 ||
    ||                                                                              ||                                                                                 ||
-   ||                                                                              ||                                                                                 ||
+   || -make-asus-kernel make and compile kernel source for tinkerboard             ||                                                                                 ||
    ++------------------------------------------------------------------------------++---------------------------------------------------------------------------------++
    ++------------------------------------------------------------------------------++---------------------------------------------------------------------------------++
       ''')
