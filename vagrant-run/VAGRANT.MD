@@ -44,6 +44,8 @@ Vagrant.configure("2") do |config|
            node.vm.network "private_network", ip: machine[:ip]
            node.proxy.http = machine[:proxy]
            node.proxy.no_proxy = machine[:no_proxy]
+           node.vm.provision "file", source: "~/.ssh/id_rsa.pub", destination: "id_rsa.pub"
+           node.vm.provision "shell", inline: "cat id_rsa.pub >> /home/vagrant/.ssh/authorized_keys"
            node.vm.provision "shell", path: machine[:file]
            node.vm.provider "virtualbox" do |vb|
              vb.customize ["modifyvm", :id, "--memory" , machine[:ram], "--cpus", machine[:cpu]]
